@@ -1,463 +1,709 @@
+/* ============================================================
+   火山为什么会喷发 — 完善版本 style.css
+   CSS变量化 + 复用现有动画 + 新增动画 + 三页样式 + 响应式
+   ============================================================ */
+
+/* ---------- CSS 变量 ---------- */
+:root {
+  --bg-gradient: linear-gradient(to top, #fff8e1, #ffe0b2);
+  --bg-page: #fffde7;
+  --color-title: #d84315;
+  --color-text: #4e342e;
+  --color-text-light: #6d4c41;
+  --color-btn: #ffab40;
+  --color-btn-hover: #ff6f00;
+  --color-correct: #4caf50;
+  --color-correct-light: #c8e6c9;
+  --color-wrong: #e53935;
+  --color-wrong-light: #ffcdd2;
+  --color-volcano: #6d4c41;
+  --color-volcano-dark: #3e1f0f;
+  --color-lava: linear-gradient(45deg, #ff4e00, #ff9900);
+  --color-lava-solid: #ff6a00;
+  --color-steam: rgba(38, 38, 151, 0.6);
+  --color-accent: #d84315;
+  --font-main: 'Comic Sans MS', 'Microsoft YaHei', cursive, sans-serif;
+  --shadow-soft: 0 4px 12px rgba(216, 67, 21, 0.15);
+  --shadow-strong: 0 6px 20px rgba(216, 67, 21, 0.25);
+  --radius: 12px;
+}
+
+/* ---------- 全局重置 ---------- */
+* { box-sizing: border-box; }
 html, body {
   margin: 0;
   padding: 0;
-  font-family: 'Comic Sans MS', cursive, sans-serif;
-  background: linear-gradient(to top, #fff8e1, #ffe0b2);
+  font-family: var(--font-main);
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--color-text);
+  min-height: 100vh;
 }
 
-/* 标题区 */
-#home {
+/* ---------- 顶部导航栏 ---------- */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 24px;
+  background: rgba(255, 248, 225, 0.95);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(216, 67, 21, 0.1);
+}
+.nav-logo {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--color-title);
+  text-decoration: none;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.nav-links a {
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.25s;
+}
+.nav-links a:hover {
+  background: var(--color-btn);
+  color: white;
+}
+.nav-links a.active {
+  background: var(--color-btn-hover);
+  color: white;
+}
+.nav-score {
+  background: var(--color-title);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  font-weight: bold;
+}
+
+/* ---------- 页面显隐 ---------- */
+.page {
+  display: none;
+  padding: 30px 20px 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: pageFadeIn 0.4s ease;
+}
+.page.active { display: block; }
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-title {
   text-align: center;
-  padding: 40px 20px 10px;
-}
-
-#title {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  color: #d84315;
+  color: var(--color-title);
+  font-size: 2.2rem;
+  margin: 10px 0 30px;
   text-shadow: 2px 2px #fff3e0;
 }
 
-/* 火山图形 */
-.cute-volcano {
+/* ============================================================
+   主页样式
+   ============================================================ */
+.hero {
+  text-align: center;
+  padding: 30px 10px 20px;
+}
+.hero-title {
+  font-size: 3rem;
+  color: var(--color-title);
+  text-shadow: 2px 2px #fff3e0;
+  margin: 0 0 10px;
+}
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: var(--color-text-light);
+  margin: 0 0 30px;
+}
+
+/* 3D 火山容器（Three.js 渲染目标） */
+.volcano-3d-container {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  height: 460px;
+  margin: 0 auto 20px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #1a0500;
+  box-shadow: 0 8px 30px rgba(216, 67, 21, 0.35), inset 0 0 0 2px rgba(255, 138, 101, 0.15);
+  cursor: grab;
+}
+.volcano-3d-container:active { cursor: grabbing; }
+.volcano-3d-container canvas { display: block; }
+.volcano-3d-container.volcano-3d-small { height: 360px; max-width: 560px; }
+.volcano-3d-hint {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffd5a8;
+  font-size: 0.85rem;
+  padding: 5px 14px;
+  border-radius: 16px;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+/* SVG 精细图通用样式 */
+.精细svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+/* 跳转卡片按钮 */
+.card-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 30px 0;
+}
+.card-btn {
+  display: block;
+  width: 240px;
+  padding: 28px 20px;
+  background: white;
+  border: 2px solid var(--color-btn);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--color-text);
+  text-align: center;
+  transition: all 0.3s;
+  box-shadow: var(--shadow-soft);
+}
+.card-btn:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-strong);
+  border-color: var(--color-btn-hover);
+}
+.card-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.card-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--color-title);
+  margin-bottom: 8px;
+}
+.card-desc { font-size: 0.95rem; color: var(--color-text-light); }
+
+/* 知识点速览卡片 */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin: 30px 0;
+}
+.stat-card {
+  background: white;
+  padding: 20px 24px;
+  border-radius: var(--radius);
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+  min-width: 140px;
+  border-top: 4px solid var(--color-btn);
+}
+.stat-num {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--color-title);
+  margin-bottom: 6px;
+}
+.stat-label { font-size: 0.9rem; color: var(--color-text-light); }
+
+/* ============================================================
+   知识展示页样式
+   ============================================================ */
+.chapter {
+  background: var(--bg-page);
+  border-radius: var(--radius);
+  padding: 28px 30px;
+  margin: 0 auto 30px;
+  max-width: 900px;
+  box-shadow: var(--shadow-soft);
+}
+.chapter-title {
+  color: var(--color-title);
+  font-size: 1.5rem;
+  margin: 0 0 16px;
+  border-bottom: 3px dashed var(--color-btn);
+  padding-bottom: 8px;
+}
+.chapter-text {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--color-text);
+  margin: 0 0 20px;
+}
+.chapter-text strong { color: var(--color-title); }
+
+/* 通用动画演示舞台 */
+.anim-stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius);
+  margin-top: 10px;
+}
+
+/* --- 章节1：地球内部结构（SVG） --- */
+.anim-stage-earth { padding: 20px; }
+.anim-stage-earth .精细svg { max-width: 380px; }
+
+/* --- 章节2：火山结构剖面（SVG） --- */
+.anim-stage-volcano-struct { padding: 20px; }
+.anim-stage-volcano-struct .精细svg { max-width: 460px; }
+
+/* --- 章节3：喷发原理（3D 容器，样式见 .volcano-3d-container） --- */
+.anim-stage-eruption { flex-direction: column; padding: 10px; }
+.eruption-caption {
+  margin-top: 20px;
+  font-size: 1rem;
+  color: var(--color-title);
+  font-weight: bold;
+}
+
+/* --- 章节4：火山类型对比（SVG） --- */
+.anim-stage-types {
+  gap: 30px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.type-group {
+  text-align: center;
+  width: 220px;
+}
+.type-group .精细svg { max-width: 220px; }
+.type-name {
+  font-weight: bold;
+  color: var(--color-title);
+  margin: 8px 0 4px;
+  font-size: 1.05rem;
+}
+.type-desc { font-size: 0.85rem; color: var(--color-text-light); }
+
+/* --- 章节5：案例卡片 --- */
+.case-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.case-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  width: 220px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+  border-top: 4px solid var(--color-title);
+}
+.case-year {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--color-title);
+}
+.case-name {
+  font-size: 1.1rem;
+  margin: 6px 0 2px;
+  color: var(--color-text);
+}
+.case-loc {
+  font-size: 0.9rem;
+  color: var(--color-text-light);
+  margin-bottom: 10px;
+}
+.case-mini {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.case-mini .精细svg { width: 100px; }
+.case-impact {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.chapter-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* 延伸阅读导航 */
+.ext-links-chapter { background: linear-gradient(135deg, #fff8e1, #ffe0b2); }
+.ext-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.ext-link-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid var(--color-btn);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--color-text);
+  transition: all 0.25s;
+  box-shadow: var(--shadow-soft);
+}
+.ext-link-item:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-btn-hover);
+  box-shadow: var(--shadow-strong);
+  color: var(--color-title);
+}
+.ext-link-icon { font-size: 1.3rem; }
+.ext-link-text { font-size: 0.95rem; font-weight: 500; }
+
+/* 静态 SVG 舞台（新章节用） */
+.anim-stage-static {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius);
+  margin-top: 10px;
+}
+.anim-stage-static .精细svg { max-width: 480px; }
+
+/* ============================================================
+   问答页样式
+   ============================================================ */
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.progress-wrap { flex: 1; min-width: 200px; }
+.progress-bar {
+  height: 14px;
+  background: #ffe0b2;
+  border-radius: 7px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, #ff6f00, #d84315);
+  border-radius: 7px;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+.progress-text {
+  font-size: 0.95rem;
+  color: var(--color-text-light);
+  margin-top: 6px;
+}
+.quiz-score {
+  background: var(--color-title);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.quiz-area {
+  background: var(--bg-page);
+  border-radius: var(--radius);
+  padding: 30px;
+  box-shadow: var(--shadow-soft);
+  min-height: 300px;
+}
+.question-text {
+  font-size: 1.4rem;
+  color: var(--color-text);
+  margin: 0 0 24px;
+  line-height: 1.6;
+  font-weight: bold;
+}
+.options {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+.option-btn {
+  display: flex;
   align-items: center;
-  margin-bottom: 30px;
-}
-
-/* 橘红色岩浆 */
-.lava-top {
-  width: 80px;
-  height: 20px;
-  background: orange;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  animation: lavaBounce 1.5s infinite ease-in-out;
-  z-index: 2;
-  position: relative;
-}
-
-/* 正等腰梯形火山体 */
-.volcano-body {
-  width: 120px;
-  height: 100px;
-  background: #6d4c41;
-  clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
-  position: relative;
-  top: -5px;
-}
-
-@keyframes lavaBounce {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-5px) scale(1.1);
-  }
-}
-
-/* 题目样式 */
-.question-section {
-  background: #fffde7;
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.question-block {
-  margin-bottom: 40px;
-}
-
-.question-text {
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-  color: #4e342e;
-}
-
-.options button {
-  display: block;
-  margin: 10px auto;
-  width: 260px;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  background-color: #ffab40;
-  color: white;
-  font-size: 1rem;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border: 2px solid var(--color-btn);
+  border-radius: var(--radius);
+  background: white;
+  color: var(--color-text);
+  font-size: 1.05rem;
+  font-family: var(--font-main);
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.25s;
+  text-align: left;
+}
+.option-btn:hover:not(:disabled) {
+  background: var(--color-btn);
+  color: white;
+  transform: translateX(4px);
+}
+.option-btn:disabled { cursor: default; }
+.option-btn .opt-anim-icon {
+  margin-left: 10px;
+  font-size: 1.2rem;
+  opacity: 0.7;
 }
 
-.options button:hover {
-  background-color: #ff6f00;
-}
-/* 小火山动画 */
-.volcano-mini {
-  width: 60px;
-  height: 60px;
-  background: brown;
-  border-radius: 50% 50% 0 0;
-  margin: 5px auto;
-  position: relative;
-}
-
-.lava-puff {
-  width: 20px;
-  height: 20px;
-  background: orange;
-  border-radius: 50%;
-  animation: puff 1s ease-in-out infinite;
-  position: absolute;
-  top: -20px;
-  left: 20px;
-}
-
-@keyframes puff {
-  0% { opacity: 0; transform: translateY(0); }
-  50% { opacity: 1; transform: translateY(-10px); }
-  100% { opacity: 0; transform: translateY(-20px); }
-}
-
-/* 黑曜石动画 */
-.obsidian-animation {
-  position: relative;
-  width: 120px;
-  height: 20px;
-  margin: 10px auto;
-}
-
-.obsidian-left,
-.obsidian-right {
-  position: absolute;
-  width: 40px;
-  height: 20px;
-  top: 0;
-  z-index: 1;
-}
-
-.obsidian-left {
-  background-color: rgb(255, 94, 0);
-  left: 0;
-  animation: moveLeft 4s infinite ease-in-out;
-}
-
-.obsidian-right {
-  background-color: blue;
-  right: 0;
-  animation: moveRight 4s infinite ease-in-out;
-}
-
-.obsidian-center {
-  position: absolute;
-  width: 40px;
-  height: 20px;
-  top: 0;
-  left: 40px;
-  background-color: black;
-  opacity: 0;
-  z-index: 2; /* 提升优先级，确保覆盖橘色和蓝色 */
-  animation: appearBlack 4s infinite ease-in-out;
-}
-
-
-@keyframes moveLeft {
-  0% { transform: translateX(0); }
-  40% { transform: translateX(40px); }
-  60% { transform: translateX(40px); }
-  100% { transform: translateX(0); }
-}
-
-@keyframes moveRight {
-  0% { transform: translateX(0); }
-  40% { transform: translateX(-40px); }
-  60% { transform: translateX(-40px); }
-  100% { transform: translateX(0); }
-}
-
-@keyframes appearBlack {
-  0%, 39% { opacity: 0; }
-  40%, 60% { opacity: 1; }
-  100% { opacity: 0; }
-}
-/*1-1*/
-/* 蒸汽动画容器 */
-.steam-line-animation {
-  position: relative;
-  width: 100px;
-  height: 60px;
-  margin: 5px auto 0 auto; /* 水平居中 */
-}
-
-/* 蒸汽条（地表横线） */
-.steam-line-animation::before {
-  content: "";
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  height: 3px;
-  background: #cc3300;
-  border-radius: 3px;
-}
-
-/* 蒸汽粒子 */
-.steam {
-  position: absolute;
-  bottom: 13px;
-  width: 6px;
-  height: 12px;
-  background: rgba(38, 38, 151, 0.6);
-  border-radius: 50%;
-  animation: steamRise 2s infinite ease-in;
-}
-
-.steam:nth-child(1) {
-  left: 10px;
-  animation-delay: 0s;
-}
-.steam:nth-child(2) {
-  left: 40px;
-  animation-delay: 0.5s;
-}
-.steam:nth-child(3) {
-  left: 70px;
-  animation-delay: 1s;
-}
-
-/* 蒸汽上升动画 */
-@keyframes steamRise {
-  0% {
-    transform: translateY(0);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateY(-20px);
-    opacity: 0.4;
-  }
-  100% {
-    transform: translateY(-40px);
-    opacity: 0;
-  }
-}
-/*1-2*/
-.crack-steam-animation {
-  position: relative;
-  width: 100px;
-  height: 60px;
-  margin: 10px auto;
-}
-
-/* 左右橘红色方块 */
-.block {
-  position: absolute;
-  width: 40px;
-  height: 30px;
-  bottom: 10px;
-  background-color: #cc3300;
-  border-radius: 5px;
-}
-.block.left {
-  left: 0;
-}
-.block.right {
-  right: 0;
-}
-
-/* 蒸汽从中缝升起 */
-.crack-steam {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  width: 6px;
-  height: 12px;
-  background: rgba(38, 38, 151, 0.6);
-  border-radius: 50%;
-  transform: translateX(-50%);
-  animation: crackSteamRise 2s infinite ease-in;
-}
-
-.steam1 {
-  animation-delay: 0s;
-}
-.steam2 {
-  animation-delay: 0.6s;
-}
-.steam3 {
-  animation-delay: 1.2s;
-}
-
-/* 上升动画 */
-@keyframes crackSteamRise {
-  0% {
-    transform: translateX(-50%) translateY(0);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateX(-50%) translateY(-15px);
-    opacity: 0.4;
-  }
-  100% {
-    transform: translateX(-50%) translateY(-30px);
-    opacity: 0;
-  }
-}
-/*1-3*/
-.lava-steam-animation {
-  position: relative;
-  width: 100px;
-  height: 60px;
-  margin: 10px auto;
-}
-
-/* 岩浆底部 */
-.lava-base {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 30px;
-  background: linear-gradient(to top, #ff4e00, #ff9900);
-  border-radius: 10px 10px 0 0;
-  z-index: 1;
-}
-
-/* 蒸汽气泡 */
-.steam-bubble {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  width: 8px;
-  height: 12px;
-  background: rgba(38, 38, 151, 0.6);
-  border-radius: 50%;
-  transform: translateX(-50%);
-  animation: steamRise 2.5s infinite ease-in;
-  z-index: 2;
-}
-
-.bubble1 {
-  animation-delay: 0s;
-}
-.bubble2 {
-  animation-delay: 0.8s;
-}
-.bubble3 {
-  animation-delay: 1.6s;
-}
-
-@keyframes steamRise {
-  0% {
-    transform: translateX(-50%) translateY(0);
-    opacity: 0.7;
-  }
-  50% {
-    transform: translateX(-50%) translateY(-15px);
-    opacity: 0.4;
-  }
-  100% {
-    transform: translateX(-50%) translateY(-30px);
-    opacity: 0;
-  }
-}
-/*8-3*/
-.lucky-text {
-  display: block;
-  margin-top: 4px;
-  font-family: 'Comic Sans MS', cursive, sans-serif;
+/* 答对/答错状态 */
+.option-btn.correct {
+  background: var(--color-correct-light);
+  border-color: var(--color-correct);
+  color: var(--color-correct);
   font-weight: bold;
-  font-size: 16px;
-  color: #ff69b4; /* 粉红色 */
-  background: linear-gradient(45deg, #ff69b4, #ff1493);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 1px 1px 2px #d147a3;
-  user-select: none;
+}
+.option-btn.wrong-flash {
+  animation: wrongFlash 0.7s ease-out forwards;
+}
+.option-btn.locked-wrong {
+  background: var(--color-wrong-light);
+  border-color: var(--color-wrong);
+  color: var(--color-wrong);
+}
+.option-btn.show-correct {
+  background: var(--color-correct-light);
+  border-color: var(--color-correct);
+  color: var(--color-correct);
+  font-weight: bold;
 }
 
-/*8-1*/
-.eruption-volcano-new {
+/* 答错：变红→迅速褪色到浅红（一次完成，不抖动不闪白） */
+@keyframes wrongFlash {
+  0%   { background-color: #ffffff; color: var(--color-text); }
+  12%  { background-color: var(--color-wrong); color: #fff; }
+  100% { background-color: var(--color-wrong-light); color: var(--color-wrong); }
+}
+
+/* 解析区 */
+.explanation {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: #fff8e1;
+  border-left: 4px solid var(--color-title);
+  border-radius: 8px;
+  display: none;
+}
+.explanation.show { display: block; animation: pageFadeIn 0.4s; }
+.explanation-label {
+  font-weight: bold;
+  color: var(--color-title);
+  margin-bottom: 6px;
+}
+.explanation-text {
+  color: var(--color-text);
+  line-height: 1.7;
+  font-size: 0.98rem;
+}
+
+/* 下一题按钮 */
+.next-btn {
+  display: block;
+  margin: 24px auto 0;
+  padding: 12px 36px;
+  background: var(--color-btn-hover);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1.05rem;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all 0.25s;
+  display: none;
+}
+.next-btn.show { display: block; animation: pageFadeIn 0.4s; }
+.next-btn:hover { background: var(--color-title); transform: scale(1.05); }
+
+/* 悬停动画演示区 */
+.hover-anim-stage {
+  margin-top: 20px;
+  padding: 20px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hover-anim-hint {
+  color: var(--color-text-light);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* ---------- 悬停动画（SVG，由 script.js 注入，无需 CSS） ---------- */
+
+
+
+/* 悬停动画样式已迁移至 SVG（由 script.js 的 ANIM_TEMPLATES 注入） */
+
+
+/* ============================================================
+   结果页样式
+   ============================================================ */
+.result-box {
+  background: white;
+  border-radius: var(--radius);
+  padding: 36px 30px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+  max-width: 700px;
+  margin: 0 auto 24px;
+}
+.result-score {
+  font-size: 3rem;
+  color: var(--color-title);
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.result-grade {
+  font-size: 1.6rem;
+  color: var(--color-btn-hover);
+  margin-bottom: 20px;
+}
+.result-grade-desc {
+  font-size: 1rem;
+  color: var(--color-text-light);
+  margin-bottom: 24px;
+}
+.result-wrong-list {
+  text-align: left;
+  background: #fff8e1;
+  border-radius: 8px;
+  padding: 18px 22px;
+  margin-top: 16px;
+}
+.result-wrong-title {
+  font-weight: bold;
+  color: var(--color-title);
+  margin-bottom: 10px;
+  font-size: 1.05rem;
+}
+.result-wrong-item {
+  font-size: 0.92rem;
+  color: var(--color-text);
+  margin: 8px 0;
+  line-height: 1.6;
+  padding-left: 18px;
   position: relative;
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 20px auto;
 }
-
-.volcano-body-new {
-  width: 100px;
-  height: 60px;
-  background: sienna;
-  border-radius: 50% 50% 0 0;
+.result-wrong-item::before {
+  content: "✗";
   position: absolute;
-  bottom: 0;
   left: 0;
-  box-shadow: inset 0 0 15px #3e1f0f;
-  z-index: 1;
+  color: var(--color-wrong);
+  font-weight: bold;
+}
+.result-perfect {
+  color: var(--color-correct);
+  font-size: 1.1rem;
+  margin-top: 16px;
+}
+.result-actions {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.lava-top-new {
-  width: 70px;
-  height: 30px;
-  background: linear-gradient(45deg, #ff4500, #ff8c00);
-  clip-path: polygon(15% 100%, 85% 100%, 100% 0, 0 0);
-  position: absolute;
-  bottom: 60px;
-  left: 15px;
-  border-radius: 4px;
-  box-shadow: 0 0 15px #ff6a00;
-  z-index: 2;
+/* 大按钮通用 */
+.big-btn {
+  display: inline-block;
+  padding: 12px 30px;
+  background: var(--color-btn-hover);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1.05rem;
+  font-family: var(--font-main);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.big-btn:hover { background: var(--color-title); transform: scale(1.05); }
+.big-btn-secondary { background: var(--color-volcano); }
+.big-btn-secondary:hover { background: var(--color-volcano-dark); }
+
+/* ============================================================
+   响应式（移动端H5）
+   ============================================================ */
+@media (max-width: 768px) {
+  .navbar { padding: 8px 14px; flex-wrap: wrap; gap: 8px; }
+  .nav-logo { font-size: 1.1rem; }
+  .nav-links { gap: 10px; }
+  .nav-links a { font-size: 0.9rem; padding: 4px 8px; }
+  .nav-score { font-size: 0.85rem; padding: 4px 10px; }
+
+  .hero-title { font-size: 2.2rem; }
+  .hero-subtitle { font-size: 1rem; }
+  .volcano-3d-container { height: 340px; }
+  .volcano-3d-container.volcano-3d-small { height: 280px; }
+
+  .card-row { flex-direction: column; align-items: center; }
+  .card-btn { width: 90%; max-width: 320px; }
+
+  .stats-row { gap: 10px; }
+  .stat-card { min-width: 120px; padding: 14px 16px; }
+  .stat-num { font-size: 1.4rem; }
+
+  .page-title { font-size: 1.7rem; }
+  .chapter { padding: 20px 16px; }
+  .chapter-title { font-size: 1.25rem; }
+  .chapter-text { font-size: 0.98rem; }
+
+  .anim-stage { padding: 14px; min-height: 140px; }
+  .type-group { width: 100%; max-width: 240px; }
+
+  .question-text { font-size: 1.15rem; }
+  .option-btn { font-size: 0.95rem; padding: 12px 14px; }
+  .quiz-area { padding: 20px 16px; }
+
+  .result-score { font-size: 2.3rem; }
 }
 
-.lava-puffs-new {
-  position: absolute;
-  bottom: 90px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 80px;
-  pointer-events: none;
-  z-index: 3;
-}
-
-.puff-new {
-  position: absolute;
-  width: 22px;
-  height: 22px;
-  background: rgba(255, 140, 0, 0.8);
-  border-radius: 50%;
-  opacity: 0;
-  filter: blur(2px);
-  animation: puffUpNew 2.5s infinite ease-in-out;
-}
-
-.puff1-new {
-  left: 20px;
-  animation-delay: 0s;
-}
-
-.puff2-new {
-  left: 50px;
-  animation-delay: 0.8s;
-}
-
-.puff3-new {
-  left: 80px;
-  animation-delay: 1.6s;
-}
-
-@keyframes puffUpNew {
-  0% {
-    transform: translateY(0) scale(0.9);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
-  }
-  70% {
-    transform: translateY(-50px) scale(1.6);
-    opacity: 0.3;
-  }
-  100% {
-    transform: translateY(-80px) scale(2.2);
-    opacity: 0;
+/* 减少动效适配 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
